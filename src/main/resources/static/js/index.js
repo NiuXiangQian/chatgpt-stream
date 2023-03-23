@@ -24,13 +24,24 @@ const onMessage = () => {
         lockSendBtn()
     }))
     sse.addEventListener('message', function (res) {
-        console.log('res', res)
-        if (res.data === '[DONE]') {
+        let resJson = JSON.parse(res.data)
+        console.log('resJson', resJson)
+        if (resJson.messageType === 'TEXT') {
+            if (resJson.end === true) {
+                sse.close()
+                unSendBtn()
+            } else {
+                last_message.find('p').append(`${resJson.message}`)
+            }
+            //图片
+        } else {
+            resJson.message.split(",").forEach(url => {
+                last_message.find('p').append(`<img class="chat-img" src="${url}"/>`)
+            })
             sse.close()
             unSendBtn()
-        } else {
-            last_message.find('p').append(`${res.data}`)
         }
+
     })
 
     sse.addEventListener('error', function () {

@@ -72,3 +72,9 @@
     list-style: none;
     padding: 0;
 }
+
+.chat-img {
+    width: 200px;
+    height: 200px;
+    margin-right: 10px;
+}

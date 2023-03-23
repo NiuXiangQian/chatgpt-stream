@@ -13,4 +13,6 @@ public interface ApiConstant {
     String CHAT_API = HOST + "/v1/chat/completions";
 
     String CONTENT_AUDIT = HOST + "/v1/moderations";
+
+    String IMAGE_API = HOST + "/v1/images/generations";
 }

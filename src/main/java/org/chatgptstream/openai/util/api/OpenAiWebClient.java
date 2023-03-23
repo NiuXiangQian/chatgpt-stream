@@ -113,6 +113,35 @@ public class OpenAiWebClient {
 
     }
 
+    public Flux<String> getImage(String user, String prompt) {
+        JSONObject params = new JSONObject();
+
+        params.put("size", "512x512");
+        params.put("prompt", prompt);
+        params.put("user", user);
+        params.put("n", 2);
+
+        return webClient.post()
+            .uri(ApiConstant.IMAGE_API)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + authorization)
+            .bodyValue(params.toJSONString())
+            .retrieve().bodyToFlux(String.class)
+            .onErrorResume(WebClientResponseException.class, ex -> {
+                HttpStatus status = ex.getStatusCode();
+                String res = ex.getResponseBodyAsString();
+                log.error("OpenAI API error: {} {}", status, res);
+                return Mono.error(new RuntimeException(res));
+            });
+
+    }
+
+    /**
+     * 内容检查
+     * 频繁输入违规的内容，会导致账号被封禁
+     *
+     * @param prompt
+     * @return
+     */
     public Mono<Boolean> checkContent(String prompt) {
         JSONObject params = new JSONObject();
         params.put("input", prompt);

@@ -14,6 +14,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,11 +31,24 @@ public class UserChatServiceImpl implements UserChatService {
     private final OpenAiWebClient openAiWebClient;
     private static final float TOKEN_CONVERSION_RATE = 0.7f;
     private static final Integer MAX_TOKEN = 4096;
+    private static final List<String> IMAGE_COMMAND_PREFIX = Arrays.asList("画", "找");
 
     @Override
     public Flux<String> send(MessageType type, String content, String sessionId) {
 
         Assert.isTrue(Boolean.FALSE.equals(openAiWebClient.checkContent(content).block()), "您输入的内容违规");
+
+        if (IMAGE_COMMAND_PREFIX.contains(String.valueOf(content.charAt(0)))) {
+            Message userMessage = new Message(MessageType.IMAGE, UserType.USER, content);
+            return Flux.create(emitter -> {
+                OpenAISubscriber subscriber = new OpenAISubscriber(emitter, sessionId, this, userMessage);
+                Flux<String> openAiResponse =
+                    openAiWebClient.getImage(sessionId, content);
+                openAiResponse.subscribe(subscriber);
+                emitter.onDispose(subscriber);
+            });
+        }
+
         Message userMessage = new Message(MessageType.TEXT, UserType.USER, content);
         int currentToken = (int) (content.length() / TOKEN_CONVERSION_RATE);
         List<Message> history = userSessionUtil.getHistory(sessionId, MessageType.TEXT, (int) ((MAX_TOKEN / TOKEN_CONVERSION_RATE) - currentToken));
@@ -62,7 +76,7 @@ public class UserChatServiceImpl implements UserChatService {
     @Override
     public void completed(Message questions, String sessionId, String response) {
         userSessionUtil.addMessage(sessionId, questions);
-        userSessionUtil.addMessage(sessionId, new Message(MessageType.TEXT, UserType.BOT, response));
+        userSessionUtil.addMessage(sessionId, new Message(questions.getMessageType(), UserType.BOT, response));
     }
 
     @Override

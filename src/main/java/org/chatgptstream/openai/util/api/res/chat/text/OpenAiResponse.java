@@ -1,4 +1,4 @@
-package org.chatgptstream.openai.util.api.res;
+package org.chatgptstream.openai.util.api.res.chat.text;
 
 import lombok.Data;
 
