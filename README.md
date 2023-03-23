@@ -1,7 +1,8 @@
 ## 🔥你的chatgpt🔥
 
-`` OpenAi最简洁的Java流式返回接入方式，没有第三方依赖，只需要使用Spring Boot即可！轻松构建你的带有聊天记忆功能的chatgpt！
-``
+OpenAi最简洁的Java流式返回接入方式，没有第三方依赖，只需要使用Spring Boot即可！轻松构建你的带有聊天记忆功能的chatgpt！
+- 模型：gpt-3.5-turbo
+
 
 ## 特点
 
