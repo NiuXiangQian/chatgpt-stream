@@ -1,6 +1,6 @@
 ## 🔥你的chatgpt🔥
 
-`` OpenAi最简洁的Java流式返回接入方式，没有第三方依赖，只需要使用Spring Boot即可!轻松构建你的chatgpt
+`` OpenAi最简洁的Java流式返回接入方式，没有第三方依赖，只需要使用Spring Boot即可！轻松构建你的chatgpt！
 ``
 
 ## 特点
@@ -20,11 +20,12 @@
 ```yaml
 authorization: 你的key
 ```
+申请地址：https://platform.openai.com/
 
 ### 关于中国大陆访问不通问题
 
 * 使用vpn代理
-    - 此功能已经实现 请查看 OpenAiWebClient.java
+    - 此功能已经实现 请查看 OpenAiWebClient.java 配置好代理ip和端口即可
 * 部署到海外
     - 取消如下配置即可
   ```yaml
