@@ -35,7 +35,8 @@ public class OpenAiWebClient {
     private WebClient webClient;
     @Value("${env:test}")
     private String env;
-
+    @Value("${authorization}")
+    private String authorization;
 
     /**
      * dev采用代理访问
@@ -83,7 +84,7 @@ public class OpenAiWebClient {
     }
 
 
-    public Flux<String> getChatResponse(String authorization, String user, String prompt, Integer maxTokens, Double temperature, Double topP) {
+    public Flux<String> getChatResponse(String user, String prompt, Integer maxTokens, Double temperature, Double topP) {
         JSONObject params = new JSONObject();
 
         params.put("model", "gpt-3.5-turbo");
@@ -112,7 +113,7 @@ public class OpenAiWebClient {
 
     }
 
-    public Mono<Boolean> checkContent(String authorization, String prompt) {
+    public Mono<Boolean> checkContent(String prompt) {
         JSONObject params = new JSONObject();
         params.put("input", prompt);
         Mono<JSONObject> toMono = webClient.post()
