@@ -29,6 +29,14 @@ authorization: 你的key
 
 * 使用vpn代理
     - 此功能已经实现 请查看 OpenAiWebClient.java 配置好代理ip和端口即可
+    ```java
+  
+  HttpClient httpClient = HttpClient.create()
+            .secure(sslContextSpec -> sslContextSpec.sslContext(finalSslContext))
+            .tcpConfiguration(tcpClient -> tcpClient.proxy(proxy ->
+                proxy.type(ProxyProvider.Proxy.HTTP).host("127.0.0.1").port(7890)));
+  
+    ```
 * 部署到海外
     - 取消如下配置即可
   ```yaml
