@@ -8,11 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
@@ -142,16 +145,22 @@ public class OpenAiWebClient {
      * @param prompt
      * @return
      */
-    public Mono<Boolean> checkContent(String prompt) {
+    public Mono<ServerResponse> checkContent(String prompt) {
         JSONObject params = new JSONObject();
         params.put("input", prompt);
-        Mono<JSONObject> toMono = webClient.post()
+        return webClient.post()
             .uri(ApiConstant.CONTENT_AUDIT)
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + authorization)
             .bodyValue(params.toJSONString())
             .retrieve()
-            .bodyToMono(JSONObject.class);
-        JSONObject jsonObject = toMono.block();
-        return Mono.just(jsonObject.getJSONArray("results").getJSONObject(0).getBoolean("flagged"));
+            .bodyToMono(JSONObject.class)
+            .flatMap(jsonObject -> {
+                // 在这里处理 JSON 对象，例如将其转换为其他类型
+                // 并将结果包装为响应体返回
+                Boolean aBoolean = jsonObject.getJSONArray("results").getJSONObject(0).getBoolean("flagged");
+                return ServerResponse.ok()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(BodyInserters.fromValue(aBoolean));
+            });
     }
 }

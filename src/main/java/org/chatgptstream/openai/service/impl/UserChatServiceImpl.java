@@ -10,7 +10,6 @@ import org.chatgptstream.openai.service.dto.Message;
 import org.chatgptstream.openai.util.api.OpenAiWebClient;
 import org.chatgptstream.openai.util.session.UserSessionUtil;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 
@@ -35,8 +34,6 @@ public class UserChatServiceImpl implements UserChatService {
 
     @Override
     public Flux<String> send(MessageType type, String content, String sessionId) {
-
-        Assert.isTrue(Boolean.FALSE.equals(openAiWebClient.checkContent(content).block()), "您输入的内容违规");
 
         if (IMAGE_COMMAND_PREFIX.contains(String.valueOf(content.charAt(0)))) {
             Message userMessage = new Message(MessageType.IMAGE, UserType.USER, content);

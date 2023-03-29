@@ -5,11 +5,19 @@ import org.chatgptstream.openai.service.UserChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chatgptstream.openai.service.dto.Message;
+import org.chatgptstream.openai.util.api.OpenAiWebClient;
+import org.chatgptstream.openai.web.req.CheckContentReq;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,6 +34,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OpenAiController {
     private final UserChatService userChatService;
+    private final OpenAiWebClient openAiWebClient;
 
 
     /**
@@ -40,6 +49,17 @@ public class OpenAiController {
         Assert.hasLength(user, "user不能为空");
         Assert.hasLength(prompt, "prompt不能为空");
         return userChatService.send(MessageType.TEXT, prompt, user);
+    }
+
+    /**
+     * 内容检测
+     * @param content
+     * @return
+     */
+    @GetMapping("/checkContent")
+    public Mono<ServerResponse> checkContent(@RequestParam String content) {
+        log.info("req:{}", content);
+        return openAiWebClient.checkContent(content);
     }
 
     /**
