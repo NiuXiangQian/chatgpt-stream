@@ -12,7 +12,7 @@ const onMessage = () => {
         alert('请等待生成完毕')
         return
     }
-    $('.chat-messages')
+    $('.chat-message-container')
         .append(`<li> <div class="chat-message chat-question"><p>${msg}</p></div></li>`)
         .append(`<li> <div class="chat-message chat-reply"><p>&nbsp;</p></div></li>`)
     let last_message = $('.chat-message:last')
@@ -24,25 +24,33 @@ const onMessage = () => {
         lockSendBtn()
     }))
     sse.addEventListener('message', function (res) {
-        let resJson = JSON.parse(res.data)
-        console.log('resJson', resJson)
-        if (resJson.messageType === 'TEXT') {
-            if (resJson.end === true) {
+            let resJson = JSON.parse(res.data)
+            console.log('resJson', resJson)
+            if (resJson.messageType === 'TEXT') {
+                if (resJson.end === true) {
+                    sse.close()
+                    unSendBtn()
+                } else {
+                    if (resJson.message.indexOf('\n') > -1) {
+                        let line = resJson.message.split('\n');
+                        for (let i = 0; i < line.length - 1; i++) {
+                            last_message.append('<p>&nbsp;</p>')
+                        }
+                        return
+                    }
+                    last_message.find('p:last').append(`${resJson.message}`)
+                }
+                //图片
+            } else {
+                resJson.message.split(",").forEach(url => {
+                    last_message.find('p').append(`<img class="chat-img" src="${url}"/>`)
+                })
                 sse.close()
                 unSendBtn()
-            } else {
-                last_message.find('p').append(`${resJson.message}`)
             }
-            //图片
-        } else {
-            resJson.message.split(",").forEach(url => {
-                last_message.find('p').append(`<img class="chat-img" src="${url}"/>`)
-            })
-            sse.close()
-            unSendBtn()
-        }
 
-    })
+        }
+    )
 
     sse.addEventListener('error', function () {
         console.log('error')
@@ -55,6 +63,8 @@ const onMessage = () => {
 
 function lockSendBtn() {
     $('.send-btn').attr('disabled', true)
+    // 动画滚动到页面底部
+    $('html, body').animate({ scrollTop: $(document).height() }, 'slow');
 }
 
 function unSendBtn() {

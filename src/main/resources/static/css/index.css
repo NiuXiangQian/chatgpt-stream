@@ -26,15 +26,13 @@
 
 .chat-message {
     margin-bottom: 10px;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-}
-
-.chat-message p {
-    background-color: #f5f5f5;
     border-radius: 5px;
-    padding: 10px
+    padding: 8px 0px;
+
+}
+.chat-message p{
+    padding: 1px 0px;
+    margin: 0;
 }
 
 
@@ -45,11 +43,7 @@
 .chat-question {
 }
 
-.chat-question p {
-    background-color: #f5f5f5;
-}
-
-.chat-reply p {
+.chat-reply  {
     background-color: #4e83ee;
     color: white;
 }
@@ -57,6 +51,10 @@
 .chat-input {
     text-align: center;
     margin-bottom: 30px;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .chat-input input {
