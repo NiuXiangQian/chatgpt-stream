@@ -37,10 +37,11 @@ public class UserChatServiceImpl implements UserChatService {
 
         if (IMAGE_COMMAND_PREFIX.contains(String.valueOf(content.charAt(0)))) {
             Message userMessage = new Message(MessageType.IMAGE, UserType.USER, content);
+            String finalContent = content;
             return Flux.create(emitter -> {
                 OpenAISubscriber subscriber = new OpenAISubscriber(emitter, sessionId, this, userMessage);
                 Flux<String> openAiResponse =
-                    openAiWebClient.getImage(sessionId, content);
+                    openAiWebClient.getImage(sessionId, finalContent);
                 openAiResponse.subscribe(subscriber);
                 emitter.onDispose(subscriber);
             });
@@ -52,7 +53,7 @@ public class UserChatServiceImpl implements UserChatService {
         log.info("history:{}", history);
         String historyDialogue = history.stream().map(e -> String.format(e.getUserType().getCode(), e.getMessage())).collect(Collectors.joining());
 
-        String prompt = StringUtils.hasLength(historyDialogue) ? String.format("%sQ:%s\n\n", historyDialogue, content) : content;
+        String prompt = StringUtils.hasLength(historyDialogue) ? String.format("%sQ:%s\nA: ", historyDialogue, content) : content;
 
 
         log.info("prompt:{}", prompt);

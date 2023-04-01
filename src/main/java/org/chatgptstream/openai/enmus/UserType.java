@@ -11,6 +11,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum UserType {
-    USER("Q:%s\n"), BOT("A:%s\n");
+    USER("Q:%s\n"), BOT("A: %s\n\n\n");
     private final String code;
 }

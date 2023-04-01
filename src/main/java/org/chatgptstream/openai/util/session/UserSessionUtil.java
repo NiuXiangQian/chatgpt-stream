@@ -5,7 +5,7 @@ import org.chatgptstream.openai.service.dto.Message;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,6 +59,7 @@ public class UserSessionUtil {
                 result.add(message);
             }
         }
+        Collections.reverse(result);
         return result;
     }
 
