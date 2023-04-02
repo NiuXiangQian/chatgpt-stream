@@ -28,6 +28,9 @@
     padding: 8px 0px;
 
 }
+.chat-message p{
+    white-space: pre-line
+}
 
 
 

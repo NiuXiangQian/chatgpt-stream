@@ -95,11 +95,6 @@
                                 let last = this_.items[this_.items.length - 1];
                                 last.message += resJson.message
                                 let words = last.message.split('');
-                                // for (let i = 0; i < words.length; i++) {
-                                //     if (words[i] === '\n') {
-                                //         words[i] = '<br/>'
-                                //     }
-                                // }
                                 let html = words.join('')
                                 last.html = marked.marked(html)
                                 document.querySelectorAll('code').forEach((block) => {
