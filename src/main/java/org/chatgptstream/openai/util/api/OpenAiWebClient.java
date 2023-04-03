@@ -50,6 +50,7 @@ public class OpenAiWebClient {
         if (env.contains("test")) {
             initDev();
         } else {
+            //如果你不需要代理的话，使用配置这个就可以了
             initProd();
         }
     }
@@ -71,7 +72,7 @@ public class OpenAiWebClient {
             .secure(sslContextSpec -> sslContextSpec.sslContext(finalSslContext))
             .tcpConfiguration(tcpClient -> tcpClient.proxy(proxy ->
                 proxy.type(ProxyProvider.Proxy.HTTP).host("127.0.0.1").port(7890)));
-        //海外正式不需要代理
+
         ClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         this.webClient = WebClient.builder().clientConnector(connector)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -122,6 +123,7 @@ public class OpenAiWebClient {
         params.put("size", "512x512");
         params.put("prompt", prompt);
         params.put("user", user);
+        // 生成图片数量 默认是1 这里写了2
         params.put("n", 2);
 
         return webClient.post()
