@@ -8,8 +8,8 @@
 OpenAi最简洁的Java流式返回接入方式，没有第三方依赖，只需要使用Spring Boot即可！轻松构建你的带有聊天记忆、画图功能的chatgpt，支持代码块高亮、markdown语法！
 - 模型：gpt-3.5-turbo
 
-- [GitHub仓库 https://github.com/NiuXiangQian/chatgpt-stream](https://github.com/NiuXiangQian/chatgpt-stream)
-- [Gitee仓库 https://gitee.com/m1603565290/chatgpt-stream](https://gitee.com/m1603565290/chatgpt-stream)
+GitHub仓库：[https://github.com/NiuXiangQian/chatgpt-stream](https://github.com/NiuXiangQian/chatgpt-stream)
+
 ## 特点
 
 * 无第三方依赖
