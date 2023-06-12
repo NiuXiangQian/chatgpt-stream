@@ -69,6 +69,11 @@ authorization: 你的key
 - [X] 图片接入
 - [ ] ....
 
+### 其他补充
+
+- 关于如何保存openai数据到数据库  
+    可以实现``CompletedCallBack``接口的``completed``方法，然后在里面保存到数据库即可，
+
 ### 交流方式
 
 有问题可以提交issue，有想法也可以提交pr，欢迎大家
