@@ -3,9 +3,9 @@ package org.chatgptstream.openai.listener;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.chatgptstream.openai.enmus.MessageType;
-import org.chatgptstream.openai.enmus.UserType;
 import org.chatgptstream.openai.service.dto.Message;
 import org.chatgptstream.openai.service.dto.MessageRes;
+import org.chatgptstream.openai.util.R;
 import org.chatgptstream.openai.util.api.res.chat.image.DataRes;
 import org.chatgptstream.openai.util.api.res.chat.image.OpenAiImageResponse;
 import org.chatgptstream.openai.util.api.res.chat.text.OpenAiResponse;
@@ -54,17 +54,22 @@ public class OpenAISubscriber implements Subscriber<String>, Disposable {
             sb.append(data);
             return;
         }
+        MessageRes res = MessageRes.builder().message("")
+                .end(Boolean.FALSE)
+                .messageType(messageType).build();
         if ("[DONE]".equals(data)) {
             log.info("OpenAI返回数据结束了");
             subscription.request(1);
-            emitter.next(JSON.toJSONString(new MessageRes(MessageType.TEXT, "", true)));
+            res.setEnd(Boolean.TRUE);
+            emitter.next(JSON.toJSONString(R.success(res)));
             completedCallBack.completed(questions, sessionId, sb.toString());
             emitter.complete();
         } else {
             OpenAiResponse openAiResponse = JSON.parseObject(data, OpenAiResponse.class);
             String content = openAiResponse.getChoices().get(0).getDelta().getContent();
             content = content == null ? "" : content;
-            emitter.next(JSON.toJSONString(new MessageRes(MessageType.TEXT, content, null)));
+            res.setMessage(content);
+            emitter.next(JSON.toJSONString(R.success(res)));
             sb.append(content);
             subscription.request(1);
         }
@@ -74,8 +79,9 @@ public class OpenAISubscriber implements Subscriber<String>, Disposable {
     @Override
     public void onError(Throwable t) {
         log.error("OpenAI返回数据异常：{}", t.getMessage());
-        emitter.error(t);
-        completedCallBack.fail(sessionId);
+        emitter.next(JSON.toJSONString(R.fail(t.getMessage())));
+        emitter.complete();
+        completedCallBack.fail(questions, sessionId, t.getMessage());
     }
 
     @Override
@@ -84,7 +90,8 @@ public class OpenAISubscriber implements Subscriber<String>, Disposable {
         if (messageType == MessageType.IMAGE) {
             OpenAiImageResponse aiImageResponse = JSON.parseObject(sb.toString(), OpenAiImageResponse.class);
             String url = aiImageResponse.getData().stream().map(DataRes::getUrl).collect(Collectors.joining(","));
-            emitter.next(JSON.toJSONString(new MessageRes(MessageType.IMAGE, url, true)));
+            MessageRes res = MessageRes.builder().message(url).end(true).build();
+            emitter.next(JSON.toJSONString(R.success(res)));
         }
         emitter.complete();
     }

@@ -78,7 +78,8 @@ public class UserChatServiceImpl implements UserChatService {
     }
 
     @Override
-    public void fail(String sessionId) {
+    public void fail(Message questions, String sessionId, String errorMsg) {
 
+        log.error("openai 处理失败 sessionId:{},questions:{},errorMsg:{}", sessionId, questions, errorMsg);
     }
 }

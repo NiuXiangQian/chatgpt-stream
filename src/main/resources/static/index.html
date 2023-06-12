@@ -87,6 +87,14 @@
                 sse.addEventListener('message', function (res) {
                         let resJson = JSON.parse(res.data)
                         console.log('resJson', resJson)
+                        if (resJson.code !== 0) {
+                            this_.generating = false
+                            alert("处理失败:" + resJson.msg)
+                            sse.close()
+                            return
+                        }
+                        resJson = resJson.data
+
                         if (resJson.messageType === 'TEXT') {
                             if (resJson.end === true) {
                                 sse.close()
