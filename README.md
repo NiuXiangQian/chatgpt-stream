@@ -28,6 +28,7 @@ GitHub仓库：[https://github.com/NiuXiangQian/chatgpt-stream](https://github.c
 ![截图3](docs/demo1.png)
 
 ### 时间轴
+- 2023-06-16 健壮性优化，规范化数据返回，优化sse接口业务上的异常处理
 - 2023-04-02 更换为vue渲染更加便捷，加入代码块高亮、表格markdown语法支持
 - 2023-04-01 优化样式、修复聊天记忆bug
 - 2023-03-29 使用netty提高并发能力
