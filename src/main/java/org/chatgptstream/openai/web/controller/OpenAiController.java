@@ -11,15 +11,13 @@ import org.chatgptstream.openai.util.R;
 import org.chatgptstream.openai.util.api.OpenAiWebClient;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -69,6 +67,32 @@ public class OpenAiController {
     }
 
     /**
+     * post方式，可以解决特殊符号，过长的文本等问题
+     *
+     * @return
+     */
+    @PostMapping(value = "/completions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> streamCompletionsPost(@RequestBody Map<String, String> param) {
+        String user = param.get("user");
+        String prompt = param.get("prompt");
+
+        Assert.hasLength(user, "user不能为空");
+        Assert.hasLength(prompt, "prompt不能为空");
+        try {
+            return userChatService.send(MessageType.TEXT, prompt, user);
+        } catch (CommonException e) {
+            log.warn("e:{}", e.getMessage());
+            e.printStackTrace();
+            return getErrorRes(e.getMessage());
+        } catch (Exception e) {
+            log.error("e:{}", e.getMessage(), e);
+            e.printStackTrace();
+            return getErrorRes(ERROR_MSG);
+        }
+    }
+
+
+    /**
      * 内容检测
      *
      * @param content
@@ -95,6 +119,7 @@ public class OpenAiController {
      * 对sse接口的异常处理
      * 我这里的建议是不要直接抛出异常中断sse链接，因为这样前端无法获取错误信息，只能获取到链接断开了
      * 所以建议正常返回数据，把返回的数据中的code设置为非0的值，前端根据code来判断是否是错误信息，参考 @see org.chatgptstream.openai.util.R
+     *
      * @param msg
      * @return
      */

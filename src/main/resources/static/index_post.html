@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/vue@3.2.36/dist/vue.global.js"></script>
+    <script src="/js/marked.min.js"></script>
+    <script src="/js/sse.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/tomorrow-night.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <title>你的 ChatGPT SSE POST 方式</title>
+</head>
+<body>
+<div id="app">
+    <div class="main-container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h4>你的 ChatGPT</h4>
+            </div>
+            <div class="chat-messages">
+                <ul class="chat-message-container">
+                    <li class="chat-message" v-for="(item,i) in items"
+                        :class="item.user==='bot'? 'chat-reply':'chat-question'">
+                        <div v-html="item.html? item.html : item.message || ''">
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="chat-input">
+                <input type="text" v-model="message" class="message-input" @keydown.enter="onSendMessage"
+                       placeholder="请输入您的消息...">
+                <button type="submit" class="send-btn" @click="onSendMessage" :disabled="generating">发送</button>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+</body>
+
+<script>
+    marked.setOptions({
+        highlight: function (code, lang) {
+            return hljs.highlightAuto(code).value;
+        }
+    });
+    const app = Vue.createApp({
+        data() {
+            return {
+                message: '',
+                items: [
+                    {user: 'bot', messageType: 'TEXT', message: '欢迎使用ChatGPT', html: ''},
+                ],
+                generating: false
+            }
+        }, methods: {
+            getUuid() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = (Math.random() * 16) | 0,
+                        v = c == 'x' ? r : (r & 0x3) | 0x8;
+                    return v.toString(16);
+                })
+            },
+            getUser() {
+                return localStorage.getItem("user")
+            },
+            onSendMessage() {
+                console.log('message:', this.message)
+                if (!this.message) {
+                    alert('请输入内容')
+                    return
+                }
+                if (this.generating) {
+                    alert('请等待生成完毕')
+                    return
+                }
+                const this_ = this
+                let sse = new SSE(`/openai/completions/stream`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    payload: JSON.stringify({
+                        user: this_.getUser(),
+                        prompt: this_.message
+                    }),
+                })
+                this.generating = true
+                this_.items.push({user: 'user', messageType: 'TEXT', message: this_.message})
+                this_.message = ''
+                sse.addEventListener('open', (function () {
+                    console.log('open')
+                    this_.generating = true
+                    this_.items.push({user: 'bot', messageType: 'TEXT', message: ''})
+                }))
+                sse.addEventListener('message', function (res) {
+                        let resJson = JSON.parse(res.data)
+                        console.log('resJson', resJson)
+                        if (resJson.code !== 0) {
+                            this_.generating = false
+                            alert("处理失败:" + resJson.msg)
+                            sse.close()
+                            return
+                        }
+                        resJson = resJson.data
+
+                        if (resJson.messageType === 'TEXT') {
+                            if (resJson.end === true) {
+                                sse.close()
+                                this_.generating = false
+                            } else {
+                                let last = this_.items[this_.items.length - 1];
+                                last.message += resJson.message
+                                let words = last.message.split('');
+                                let html = words.join('')
+                                last.html = marked.marked(html)
+                                document.querySelectorAll('code').forEach((block) => {
+                                    if (!block.classList.contains('hljs')) {
+                                        block.classList.add('hljs')
+                                    }
+                                });
+
+                            }
+                            //图片
+                        } else {
+                            let url_html = '';
+                            resJson.message.split(",").forEach(url => {
+                                url_html += `<img class="chat-img" src="${url}"/>`
+                            })
+                            this_.items[this_.items.length - 1] = {user: 'bot', messageType: 'IMAGE', message: url_html}
+                            sse.close()
+                            this_.generating = false
+                        }
+
+                    }
+                )
+
+                sse.addEventListener('error', function () {
+                    console.log('error')
+                    this_.generating = false
+
+                    alert('服务器错误，请查看日志')
+                })
+                sse.stream()
+
+            }
+        },
+        mounted() {
+            console.log('mounted')
+            let user = this.getUser();
+            if (!user) {
+                console.log("No user found, creating new user")
+                localStorage.setItem("user", this.getUuid())
+            }
+            console.log('user:', this.getUser())
+
+        }
+    })
+    app.mount('#app')
+</script>
+
+</html>
