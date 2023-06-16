@@ -62,6 +62,24 @@ authorization: 你的key
 
 启动springboot 然后访问 http://127.0.0.1:8080/
 
+### 便于接入自己的业务系统
+
+只需要稍微扩展如下接口，即可接入自己的业务系统将消息入库、记录....
+```java
+public interface CompletedCallBack {
+
+    /**
+     * 成功完成回调用
+     */
+    void completed(Message questions, String sessionId, String response);
+
+    /**
+     * 失败回调
+     */
+    void fail(Message questions, String sessionId, String response);
+}
+```
+
 ### 后续功能
 
 - [X] 流式返回
