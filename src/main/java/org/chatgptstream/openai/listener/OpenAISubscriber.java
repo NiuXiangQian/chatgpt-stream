@@ -6,6 +6,7 @@ import org.chatgptstream.openai.enmus.MessageType;
 import org.chatgptstream.openai.service.dto.Message;
 import org.chatgptstream.openai.service.dto.MessageRes;
 import org.chatgptstream.openai.util.R;
+import org.chatgptstream.openai.util.api.OpenAiWebClient;
 import org.chatgptstream.openai.util.api.res.chat.image.DataRes;
 import org.chatgptstream.openai.util.api.res.chat.image.OpenAiImageResponse;
 import org.chatgptstream.openai.util.api.res.chat.text.OpenAiResponse;
@@ -79,7 +80,12 @@ public class OpenAISubscriber implements Subscriber<String>, Disposable {
     @Override
     public void onError(Throwable t) {
         log.error("OpenAI返回数据异常：{}", t.getMessage());
-        emitter.next(JSON.toJSONString(R.fail(t.getMessage())));
+        if (t.getMessage().contains(OpenAiWebClient.CONTEXT_LENGTH_EXCEEDED)){
+            emitter.next(JSON.toJSONString(R.fail("内容超出了限制长度，已经清理历史记录，请重新进行提问")));
+            completedCallBack.clearHistory(sessionId);
+        }else {
+            emitter.next(JSON.toJSONString(R.fail(t.getMessage())));
+        }
         emitter.complete();
         completedCallBack.fail(questions, sessionId, t.getMessage());
     }

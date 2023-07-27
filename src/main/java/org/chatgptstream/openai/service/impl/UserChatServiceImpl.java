@@ -28,8 +28,18 @@ import java.util.stream.Collectors;
 public class UserChatServiceImpl implements UserChatService {
     private final UserSessionUtil userSessionUtil;
     private final OpenAiWebClient openAiWebClient;
+    /**
+     * tokens和中文的转化比例
+     */
     private static final float TOKEN_CONVERSION_RATE = 0.7f;
+    /**
+     * 最长tokens
+     */
     private static final Integer MAX_TOKEN = 4096;
+    /**
+     * 最大中文长度
+     */
+    private static final Integer CHINESE_LENGTH = (int) (MAX_TOKEN / TOKEN_CONVERSION_RATE);
     private static final List<String> IMAGE_COMMAND_PREFIX = Arrays.asList("画", "找");
 
     @Override
@@ -37,11 +47,10 @@ public class UserChatServiceImpl implements UserChatService {
 
         if (IMAGE_COMMAND_PREFIX.contains(String.valueOf(content.charAt(0)))) {
             Message userMessage = new Message(MessageType.IMAGE, UserType.USER, content);
-            String finalContent = content;
             return Flux.create(emitter -> {
                 OpenAISubscriber subscriber = new OpenAISubscriber(emitter, sessionId, this, userMessage);
                 Flux<String> openAiResponse =
-                    openAiWebClient.getImage(sessionId, finalContent);
+                        openAiWebClient.getImage(sessionId, content);
                 openAiResponse.subscribe(subscriber);
                 emitter.onDispose(subscriber);
             });
@@ -49,7 +58,8 @@ public class UserChatServiceImpl implements UserChatService {
 
         Message userMessage = new Message(MessageType.TEXT, UserType.USER, content);
         int currentToken = (int) (content.length() / TOKEN_CONVERSION_RATE);
-        List<Message> history = userSessionUtil.getHistory(sessionId, MessageType.TEXT, (int) ((MAX_TOKEN / TOKEN_CONVERSION_RATE) - currentToken));
+        //获取历史对话 尽量保证不超过4096个tokens
+        List<Message> history = userSessionUtil.getHistory(sessionId, MessageType.TEXT, (int) (CHINESE_LENGTH - currentToken));
         log.info("history:{}", history);
         String historyDialogue = history.stream().map(e -> String.format(e.getUserType().getCode(), e.getMessage())).collect(Collectors.joining());
 
@@ -60,7 +70,7 @@ public class UserChatServiceImpl implements UserChatService {
         return Flux.create(emitter -> {
             OpenAISubscriber subscriber = new OpenAISubscriber(emitter, sessionId, this, userMessage);
             Flux<String> openAiResponse =
-                openAiWebClient.getChatResponse(sessionId, prompt, null, null, null);
+                    openAiWebClient.getChatResponse(sessionId, prompt, null, null, null);
             openAiResponse.subscribe(subscriber);
             emitter.onDispose(subscriber);
         });
@@ -79,7 +89,12 @@ public class UserChatServiceImpl implements UserChatService {
 
     @Override
     public void fail(Message questions, String sessionId, String errorMsg) {
-
         log.error("openai 处理失败 sessionId:{},questions:{},errorMsg:{}", sessionId, questions, errorMsg);
+    }
+
+    @Override
+    public void clearHistory(String sessionId) {
+        log.info("清除历史记录 sessionId:{}", sessionId);
+        userSessionUtil.clearHistory(sessionId);
     }
 }

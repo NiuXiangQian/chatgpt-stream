@@ -64,4 +64,7 @@ public class UserSessionUtil {
     }
 
 
+    public void clearHistory(String sessionId) {
+        MESSAGE_HISTORY.remove(sessionId);
+    }
 }

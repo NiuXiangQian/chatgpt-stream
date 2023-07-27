@@ -41,6 +41,9 @@ public class OpenAiWebClient {
     @Value("${authorization}")
     private String authorization;
 
+    public static final String CONTEXT_LENGTH_EXCEEDED = "context_length_exceeded";
+
+
     /**
      * dev采用代理访问
      */

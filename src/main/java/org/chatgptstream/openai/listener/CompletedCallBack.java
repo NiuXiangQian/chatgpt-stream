@@ -27,4 +27,9 @@ public interface CompletedCallBack {
      */
     void fail(Message questions, String sessionId, String response);
 
+    /**
+     * 清除历史
+     * @param sessionId
+     */
+    void clearHistory(String sessionId);
 }

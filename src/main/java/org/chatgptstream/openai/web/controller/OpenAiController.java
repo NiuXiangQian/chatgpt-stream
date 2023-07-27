@@ -32,6 +32,7 @@ import java.util.concurrent.Executors;
 @RequestMapping({"/openai"})
 @RequiredArgsConstructor
 public class OpenAiController {
+
     private final UserChatService userChatService;
     private final OpenAiWebClient openAiWebClient;
     private static final String ERROR_MSG = "使用的人太多啦！等下再用吧！";
