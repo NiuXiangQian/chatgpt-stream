@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -34,12 +35,13 @@ import java.util.Collections;
  **/
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class OpenAiWebClient {
     private WebClient webClient;
     @Value("${env:test}")
     private String env;
-    @Value("${authorization}")
-    private String authorization;
+
+    private final OpenAiConfig openAiConfig;
 
     public static final String CONTEXT_LENGTH_EXCEEDED = "context_length_exceeded";
 
@@ -107,7 +109,7 @@ public class OpenAiWebClient {
 
         return webClient.post()
             .uri(ApiConstant.CHAT_API)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + authorization)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + openAiConfig.getAuthorization())
             .bodyValue(params.toJSONString())
             .retrieve()
             .bodyToFlux(String.class)
@@ -131,7 +133,7 @@ public class OpenAiWebClient {
 
         return webClient.post()
             .uri(ApiConstant.IMAGE_API)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + authorization)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + openAiConfig.getAuthorization())
             .bodyValue(params.toJSONString())
             .retrieve().bodyToFlux(String.class)
             .onErrorResume(WebClientResponseException.class, ex -> {
@@ -155,7 +157,7 @@ public class OpenAiWebClient {
         params.put("input", prompt);
         return webClient.post()
             .uri(ApiConstant.CONTENT_AUDIT)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + authorization)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + openAiConfig.getAuthorization())
             .bodyValue(params.toJSONString())
             .retrieve()
             .bodyToMono(JSONObject.class)

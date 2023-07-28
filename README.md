@@ -38,7 +38,10 @@ GitHub仓库：[https://github.com/NiuXiangQian/chatgpt-stream](https://github.c
 ### 重要配置
 
 ```yaml
-authorization: 你的key
+openai:
+  key-list:
+    - xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx # 你的key列表 默认是轮询使用
+    - xxxxx
 ```
 申请地址：https://platform.openai.com/
 

@@ -7,4 +7,6 @@ server:
 
 
 env: test
-authorization: xxx
+openai:
+  key-list:
+    - xxx
